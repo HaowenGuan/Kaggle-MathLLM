@@ -41,6 +41,19 @@ torchrun --nproc_per_node 2 -m FlagEmbedding.baai_general_embedding.finetune.run
 
 * For the next step, I plan to fine-tune the BGE model on the training data using the aforementioned context architectures to see if performance can be improved.
 
+## 3rd Week Progress
+* Since last week, I started experimenting with 2 baseline approaches, where they test scores of 0.141 and 0.144.
+* This week, I have been spending a lot of time importing baai-BGE model training code and trying to get it to work.
+* I am mostly following the tutorial in Flag Embedding Open repository: https://github.com/FlagOpen/FlagEmbedding/tree/master/examples/finetune
+* I am still working on debugging the training code. There are some dependent issues with the anaconda environment, a package is unable to be installed. I am trying to switch to a native python environment. This is costing a lot of time.
+* Hopefully, I will successfully fine-tune my first model next week.
+
+## 4th Week Progress
+* Since last week, I have been working on debugging the training code for the BGE model. I have successfully resolved the dependency issues and have been able to run the training code.
+  * Reference: [Training-finetune-bge-embedding-model.ipynb](Training-finetune-bge-embedding-model.ipynb)
+  * I have successfully fine-tuned the BGE model on the training data using the context architecture `test["SubjectName"] + " ### " + test["ConstructName"] + " ### " + test["QuestionText"] + " ### " + Answer[A-D]Text`. The model was trained for 3 epochs, loss decreased from 1.48 to 0.45.
+* I have my inference code at [Inference-finetune-bge-embedding-model.ipynb](Inference-finetune-bge-embedding-model.ipynb).
+* My current public test set score is 2.1 right now. According to the leaderboard, the finetune can go up to at least 0.27-0.4. Since it is just a preliminary attempt, I am happy with the results.
 
 
 
