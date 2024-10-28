@@ -55,10 +55,22 @@ torchrun --nproc_per_node 2 -m FlagEmbedding.baai_general_embedding.finetune.run
 * I have my inference code at [Inference-finetune-bge-embedding-model.ipynb](Inference-finetune-bge-embedding-model.ipynb).
 * My current public test set score is 2.1 right now. According to the leaderboard, the finetune can go up to at least 0.27-0.4. Since it is just a preliminary attempt, I am happy with the results.
 
-
-
-
-
+## 5th Week Progress
+* Last week, I had the first successful try on fine-tuning a model. The model was trained for 3 epochs, loss decreased from 1.48 to 0.45. The public test score is 2.1.
+* This week, I have been doing extensive training with various trick.
+  * I retrained a new model with larger about of hard negative samples (50s, previous is 10s).
+    * Explanation: In this research, we are predicting the correct misconception label for each question-answer pair. However, in the choices of misconception labels, there are in total 2587 total misconception labels.  Though this is a multi-class classification problem, the number of classes is too large, and we can't compute the embedding of all misconception labels to calculate the full cross-entropy loss. Therefore, we need to sample a subset of misconception labels as negative samples to calculate the loss. The number of negative samples is a hyperparameter that needs to be tuned. The more negative samples we use, the more robust the model will be, but the slower the training will be.
+  * This time, I was able to train the model with 50 negative samples. The model was trained for 3 epochs, loss decreased from 1.48 to 0.3. The public test score is 2.45. [0.245-infer-finetune-bge-embedding-model.ipynb](0.245-infer-finetune-bge-embedding-model.ipynb).
+  * I took the above model and retrained it for an additional 3 epochs. The model was trained for 6 epochs, loss decreased from 0.3 to 0.2. The public test score is 2.31 (Dropped). Seems like the model is overfitting.
+  
+## 6th Week Progress
+* Last week, I achieved a public test score of 2.45 by training a model with 50 negative samples for 3 epochs. However, the model overfitted when trained for 6 epochs.
+* This week, we need a better learning strategy.
+* Previously, we dumped all correct question-answer pairs because this is a misconception prediction task, and there is no misconception label for correct question-answer pairs. However, it is possible to use the correct question-answer pairs to train the model.
+* I manually created a new misconception label called `Correct Answer.` and assigned it to all correct question-answer pairs. By making this simple change, I was able to increase the total number of training samples from 4800 to 6300.
+* Furthermore, letting model learn from correct question-answer pairs can help the model to learn the correct answer patterns, so it can better predict the misconception labels (presumably).
+* This experiment did not end up well. The public test score is 2.25. I think it is related to the fact that I used the above model to continue the training. The model is already overfitting, and adding more data to the training set will make the model overfit more.
+* Next week, I will do more experiments with different learning strategies.
 
 
 
