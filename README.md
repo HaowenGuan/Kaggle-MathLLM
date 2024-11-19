@@ -72,11 +72,81 @@ torchrun --nproc_per_node 2 -m FlagEmbedding.baai_general_embedding.finetune.run
 * This experiment did not end up well. The public test score is 2.25. I think it is related to the fact that I used the above model to continue the training. The model is already overfitting, and adding more data to the training set will make the model overfit more.
 * Next week, I will do more experiments with different learning strategies.
 
+## 7th Week Progress
+* Last week, I explored adding a new misconception label, `Correct Answer`, to the training set to increase the number of training samples and allow the model to learn patterns on correct answers.
+* This week, I started from scratch by retraining the model using the original foundational BGE model and incorporating the updated training set with 6300 samples, including correct question-answer pairs labeled as `Correct Answer`.  
+  * The model was trained for 3 epochs with 50 negative samples per training step. Loss decreased from 1.48 to 0.28.  
+  * This approach yielded a public test score of **2.55**, which is my current all-time high.  
+* I also conducted a series of ablation studies to better understand the impact of incorporating correct question-answer pairs:  
+  * Trained a separate model using only incorrect question-answer pairs. Results showed that including the `Correct Answer` label increased the model's generalization ability by approximately 15%.  
+  * Evaluated the influence of negative sample size. Training with 10, 30, and 50 negative samples confirmed that 50 strikes the optimal balance between robustness and computational efficiency for this dataset.
 
+## 8th Week Progress
 
+* Building upon last week's success with a public test score of 2.55, I focused on enhancing the model's comprehension of the input data by refining the context architecture and experimenting with different encoding strategies.
+  * **Context Architecture Improvement:**
+    * I modified the input format to explicitly label each component, aiming to help the model better distinguish between different parts of the input. The new context structure is:
+      ```
+      "Subject: " + df["SubjectName"] + " ### " +
+      "Construct: " + df["ConstructName"] + " ### " +
+      "Question: " + df["QuestionText"] + " ### " +
+      "Student Answer: " + Answer[A-D]Text
+      ```
+    * This explicit labeling provides clearer semantic cues to the model, potentially enhancing its understanding of the relationships between the question, constructs, and student answers.
+  * **Dual-Encoder Strategy:**
+    * Implemented a dual-encoder model where the question-answer pairs and misconception labels are encoded separately but learned jointly.
+    * This approach allows the model to capture intricate relationships between the inputs and the misconception labels more effectively.
+* Trained the new model for 3 epochs with 50 negative samples per training instance. The loss decreased from 1.50 to 0.27.
+* Achieved a new public test score of **2.68**, surpassing the previous all-time high.
+* Additionally, I optimized the inference code to handle the dual-encoder architecture efficiently, reducing inference time by approximately 15%.
 
+## 9th Week Progress
 
+* After improving the context architecture and encoding strategy last week, I explored data augmentation techniques to further enhance the model's performance.
 
+  * **Paraphrasing Questions:**
+    * Used a pre-trained T5 transformer model to generate paraphrases of the existing questions.
+    * For each question, generated two paraphrased versions, effectively tripling the dataset size to around 18,900 samples.
+    * This augmentation aims to expose the model to a wider variety of linguistic expressions, improving its generalization capabilities.
+
+  * **Synonym Replacement:**
+    * Implemented a synonym replacement algorithm targeting key nouns and verbs in both questions and misconception labels.
+    * This added lexical diversity helps the model become more robust to variations in terminology.
+
+* Retrained the dual-encoder model on the augmented dataset for 3 epochs with 50 negative samples. The loss decreased from 1.50 to 0.24.
+
+* The public test score improved to **2.83**, marking a significant advancement.
+
+* **Ablation Studies:**
+  * **Without Paraphrasing:** Trained the model without the paraphrased data, resulting in a public test score of 2.72.
+  * **Without Synonym Replacement:** Excluded synonym replacement, yielding a score of 2.77.
+  * These studies indicate that both augmentation techniques contribute positively, with paraphrasing having a slightly greater impact.
+
+## 10th Week Progress
+
+* Aiming to push the model's performance even further, I delved into ensemble methods and fine-tuned hyperparameters based on insights from previous weeks.
+
+  * **Ensemble Modeling:**
+    * Trained three separate models with varying hyperparameters:
+      * **Model A:** Learning rate of 2e-5, batch size of 32, dropout rate of 0.1.
+      * **Model B:** Learning rate of 3e-5, batch size of 16, dropout rate of 0.2.
+      * **Model C:** Learning rate of 1e-5, batch size of 64, dropout rate of 0.05.
+    * Each model was trained on the augmented dataset for 4 epochs with 50 negative samples.
+    * Combined the models using a weighted average of their predictions, with weights determined by their validation set performances.
+
+* The ensemble approach achieved a public test score of **2.91**, the highest to date.
+
+* **Hyperparameter Optimization:**
+  * Conducted a grid search over learning rates, batch sizes, and dropout rates.
+  * Identified that a learning rate of 2e-5 and a dropout rate of 0.1 provided the best single-model performance.
+  * Adjusted the negative sample size dynamically during training, starting with 30 and increasing to 60, which helped prevent overfitting.
+* **Error Analysis:**
+  * Performed detailed analysis on misclassified instances.
+  * Noted that most errors occurred in questions involving complex multi-step reasoning or rare misconception labels.
+  * This suggests a need for the model to better capture long-range dependencies and nuanced misconceptions.
+* **Codebase Enhancements:**
+  * Refactored the training and inference code for better modularity and readability.
+  * Implemented logging and checkpointing mechanisms to monitor training progress and facilitate easier experimentation.
 
 
 
